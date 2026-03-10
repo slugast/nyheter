@@ -10,6 +10,7 @@ const { sendReport } = require('./mailer');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const BASE = process.env.BASE_PATH || ''; // t.ex. '/nyheter' i prod
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -19,10 +20,9 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'byt-detta-i-produktion',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 } // 1 vecka
+  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }
 }));
 
-// Lägg till user på alla requests
 app.use((req, res, next) => {
   if (req.session.userId) {
     req.user = getUserById(req.session.userId);
@@ -30,7 +30,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Skicka HTML-filer
 function sendView(res, file) {
   res.sendFile(path.join(__dirname, '..', 'views', file));
 }
@@ -38,8 +37,8 @@ function sendView(res, file) {
 // ─── Publika rutter ───────────────────────────────────────────────────────────
 
 app.get('/', (req, res) => {
-  if (req.session.userId) return res.redirect('/dashboard');
-  res.redirect('/login');
+  if (req.session.userId) return res.redirect(BASE + '/dashboard');
+  res.redirect(BASE + '/login');
 });
 
 app.get('/login', (req, res) => sendView(res, 'login.html'));
@@ -47,24 +46,22 @@ app.get('/login', (req, res) => sendView(res, 'login.html'));
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = await login(username, password);
-  if (!user) return res.redirect('/login?error=1');
+  if (!user) return res.redirect(BASE + '/login?error=1');
   req.session.userId = user.id;
-  res.redirect('/dashboard');
+  res.redirect(BASE + '/dashboard');
 });
 
 app.get('/logout', (req, res) => {
   req.session.destroy();
-  res.redirect('/login');
+  res.redirect(BASE + '/login');
 });
 
-// Publik rapport-sida: /r/:slug
 app.get('/r/:slug', (req, res) => {
   const job = db.prepare('SELECT * FROM jobs WHERE slug = ?').get(req.params.slug);
   if (!job) return res.status(404).send('Hittades inte');
   sendView(res, 'report.html');
 });
 
-// API för publik rapport-sida
 app.get('/api/r/:slug', (req, res) => {
   const job = db.prepare('SELECT * FROM jobs WHERE slug = ?').get(req.params.slug);
   if (!job) return res.status(404).json({ error: 'Hittades inte' });
@@ -85,7 +82,6 @@ app.get('/api/me', requireLogin, (req, res) => {
   res.json({ user: req.user, job: job || null });
 });
 
-// Spara/uppdatera jobb
 app.post('/api/job', requireLogin, (req, res) => {
   const { topic, slug, cron_expr, email, enabled } = req.body;
 
@@ -126,7 +122,6 @@ app.post('/api/job', requireLogin, (req, res) => {
   }
 });
 
-// Kör jobb manuellt
 app.post('/api/job/run', requireLogin, async (req, res) => {
   const job = db.prepare('SELECT * FROM jobs WHERE user_id = ?').get(req.user.id);
   if (!job) return res.status(404).json({ error: 'Inget jobb konfigurerat' });
@@ -151,5 +146,5 @@ app.post('/api/job/run', requireLogin, async (req, res) => {
 loadAllJobs();
 
 app.listen(PORT, () => {
-  console.log(`Nyheter körs på port ${PORT}`);
+  console.log(`Nyheter körs på port ${PORT} (BASE_PATH=${BASE || '/'})`);
 });

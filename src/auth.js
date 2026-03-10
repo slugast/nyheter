@@ -5,7 +5,7 @@ function requireLogin(req, res, next) {
   if (req.session && req.session.userId) {
     return next();
   }
-  res.redirect('/login');
+  res.redirect((process.env.BASE_PATH || '') + '/login');
 }
 
 async function login(username, password) {
