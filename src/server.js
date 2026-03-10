@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const fs = require('fs');
 const db = require('./db');
 const { requireLogin, login, getUserById } = require('./auth');
 const { scheduleJob, unscheduleJob, loadAllJobs } = require('./scheduler');
@@ -31,7 +32,9 @@ app.use((req, res, next) => {
 });
 
 function sendView(res, file) {
-  res.sendFile(path.join(__dirname, '..', 'views', file));
+  const filePath = path.join(__dirname, '..', 'views', file);
+  const html = fs.readFileSync(filePath, 'utf8').replace(/\{\{BASE\}\}/g, BASE);
+  res.type('html').send(html);
 }
 
 // ─── Publika rutter ───────────────────────────────────────────────────────────

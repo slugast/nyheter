@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nyhetsrapport</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="{{BASE}}/style.css">
 </head>
 <body>
   <header>
     <span class="logo">Nyheter</span>
+    <nav><a href="{{BASE}}/login" class="btn btn-ghost">Logga in</a></nav>
   </header>
 
   <main id="main">
@@ -16,6 +17,7 @@
   </main>
 
   <script>
+    const BASE = '{{BASE}}';
     const slug = location.pathname.split('/').pop();
 
     function formatDate(str) {
@@ -25,7 +27,6 @@
       });
     }
 
-    // Enkel markdown → HTML (fetstil, rubriker, radbrytningar)
     function md(text) {
       const lines = text.split('\n');
       let html = '';
@@ -55,7 +56,6 @@
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
-        // Tabell
         if (line.trim().startsWith('|')) {
           flushPara();
           inTable = true;
@@ -103,7 +103,7 @@
     }
 
     async function load() {
-      const res = await fetch(`/api/r/${slug}`);
+      const res = await fetch(`${BASE}/api/r/${slug}`);
       const main = document.getElementById('main');
 
       if (!res.ok) {

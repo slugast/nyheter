@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nyheter – Logga in</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="{{BASE}}/style.css">
 </head>
 <body class="center-page">
   <div class="card" style="max-width:380px;width:100%">
     <h1>Nyheter</h1>
     <p class="subtitle">AI-driven nyhetsbevakning</p>
 
-    <form method="POST" action="/login">
+    <form method="POST" action="{{BASE}}/login">
       <div class="field">
         <label for="username">Användarnamn</label>
         <input id="username" name="username" type="text" required autofocus>

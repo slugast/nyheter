@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nyheter – Dashboard</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="{{BASE}}/style.css">
 </head>
 <body>
   <header>
     <span class="logo">Nyheter</span>
     <nav>
       <span id="username-display"></span>
-      <a href="/logout" class="btn btn-ghost">Logga ut</a>
+      <a href="{{BASE}}/logout" class="btn btn-ghost">Logga ut</a>
     </nav>
   </header>
 
@@ -65,11 +65,11 @@
   </main>
 
   <script>
+    const BASE = '{{BASE}}';
     const origin = location.origin;
-    let currentSlug = '';
 
     async function load() {
-      const res = await fetch('/api/me');
+      const res = await fetch(BASE + '/api/me');
       const { user, job } = await res.json();
       document.getElementById('username-display').textContent = user.username;
 
@@ -84,8 +84,7 @@
     }
 
     function setSlug(slug) {
-      currentSlug = slug;
-      const url = `${origin}/r/${slug}`;
+      const url = `${origin}${BASE}/r/${slug}`;
       const link = document.getElementById('public-link');
       link.href = url;
       link.textContent = url;
@@ -112,7 +111,7 @@
         enabled: document.getElementById('enabled').checked
       };
 
-      const res = await fetch('/api/job', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const res = await fetch(BASE + '/api/job', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
 
       if (res.ok) {
@@ -131,7 +130,7 @@
       msg.className = 'status-msg';
       document.getElementById('run-now').disabled = true;
 
-      const res = await fetch('/api/job/run', { method: 'POST' });
+      const res = await fetch(BASE + '/api/job/run', { method: 'POST' });
       const data = await res.json();
       document.getElementById('run-now').disabled = false;
 
