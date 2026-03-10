@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nyheter – Logga in</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="center-page">
+  <div class="card" style="max-width:380px;width:100%">
+    <h1>Nyheter</h1>
+    <p class="subtitle">AI-driven nyhetsbevakning</p>
+
+    <form method="POST" action="/login">
+      <div class="field">
+        <label for="username">Användarnamn</label>
+        <input id="username" name="username" type="text" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Lösenord</label>
+        <input id="password" name="password" type="password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Logga in</button>
+    </form>
+
+    <script>
+      if (new URLSearchParams(location.search).get('error')) {
+        const err = document.createElement('p');
+        err.className = 'error';
+        err.textContent = 'Fel användarnamn eller lösenord';
+        document.querySelector('form').prepend(err);
+      }
+    </script>
+  </div>
+</body>
+</html>

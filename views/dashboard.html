@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nyheter – Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <span class="logo">Nyheter</span>
+    <nav>
+      <span id="username-display"></span>
+      <a href="/logout" class="btn btn-ghost">Logga ut</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Mitt bevakningsjobb</h2>
+
+      <form id="job-form">
+        <div class="field">
+          <label for="topic">Ämne att bevaka</label>
+          <input id="topic" name="topic" type="text" placeholder="t.ex. kriget i Mellanöstern" required>
+        </div>
+
+        <div class="field">
+          <label for="slug">Publik URL-slug</label>
+          <div class="input-prefix">
+            <span id="slug-prefix">/r/</span>
+            <input id="slug" name="slug" type="text" placeholder="mellanostern" required>
+          </div>
+          <small>Publik länk: <a id="public-link" href="#" target="_blank"></a></small>
+        </div>
+
+        <div class="field">
+          <label for="cron_expr">Schema (cron)</label>
+          <input id="cron_expr" name="cron_expr" type="text" placeholder="0 7 * * *" required>
+          <small>Exempel: <code>0 7 * * *</code> = varje dag kl 07:00 &nbsp;|&nbsp; <code>0 7,18 * * *</code> = 07:00 och 18:00</small>
+        </div>
+
+        <div class="field">
+          <label for="email">E-postadress för rapport (valfritt)</label>
+          <input id="email" name="email" type="email" placeholder="du@exempel.se">
+          <small>Lämna tomt om du bara vill läsa på webben</small>
+        </div>
+
+        <div class="field field-row">
+          <label class="toggle">
+            <input id="enabled" name="enabled" type="checkbox" checked>
+            <span>Aktiverat</span>
+          </label>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn btn-primary">Spara</button>
+          <button type="button" id="run-now" class="btn btn-secondary">Kör nu</button>
+          <a id="view-link" href="#" target="_blank" class="btn btn-ghost" style="display:none">Visa rapport</a>
+        </div>
+
+        <p id="status-msg" class="status-msg"></p>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const origin = location.origin;
+    let currentSlug = '';
+
+    async function load() {
+      const res = await fetch('/api/me');
+      const { user, job } = await res.json();
+      document.getElementById('username-display').textContent = user.username;
+
+      if (job) {
+        document.getElementById('topic').value = job.topic;
+        document.getElementById('slug').value = job.slug;
+        document.getElementById('cron_expr').value = job.cron_expr;
+        document.getElementById('email').value = job.email || '';
+        document.getElementById('enabled').checked = !!job.enabled;
+        setSlug(job.slug);
+      }
+    }
+
+    function setSlug(slug) {
+      currentSlug = slug;
+      const url = `${origin}/r/${slug}`;
+      const link = document.getElementById('public-link');
+      link.href = url;
+      link.textContent = url;
+      const viewLink = document.getElementById('view-link');
+      viewLink.href = url;
+      if (slug) viewLink.style.display = '';
+    }
+
+    document.getElementById('slug').addEventListener('input', e => {
+      setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'));
+    });
+
+    document.getElementById('job-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const msg = document.getElementById('status-msg');
+      msg.textContent = 'Sparar...';
+      msg.className = 'status-msg';
+
+      const body = {
+        topic: document.getElementById('topic').value,
+        slug: document.getElementById('slug').value,
+        cron_expr: document.getElementById('cron_expr').value,
+        email: document.getElementById('email').value,
+        enabled: document.getElementById('enabled').checked
+      };
+
+      const res = await fetch('/api/job', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+
+      if (res.ok) {
+        msg.textContent = 'Sparat!';
+        msg.className = 'status-msg ok';
+        setSlug(data.job.slug);
+      } else {
+        msg.textContent = data.error || 'Något gick fel';
+        msg.className = 'status-msg error';
+      }
+    });
+
+    document.getElementById('run-now').addEventListener('click', async () => {
+      const msg = document.getElementById('status-msg');
+      msg.textContent = 'Genererar rapport... (kan ta 5–10 min)';
+      msg.className = 'status-msg';
+      document.getElementById('run-now').disabled = true;
+
+      const res = await fetch('/api/job/run', { method: 'POST' });
+      const data = await res.json();
+      document.getElementById('run-now').disabled = false;
+
+      if (res.ok) {
+        msg.textContent = 'Rapport klar!';
+        msg.className = 'status-msg ok';
+      } else {
+        msg.textContent = data.error || 'Något gick fel';
+        msg.className = 'status-msg error';
+      }
+    });
+
+    load();
+  </script>
+</body>
+</html>
