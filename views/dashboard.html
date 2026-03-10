@@ -84,7 +84,7 @@
     }
 
     function setSlug(slug) {
-      const url = `${origin}${BASE}/r/${slug}`;
+      const url = `${origin}${BASE}/${slug}`;
       const link = document.getElementById('public-link');
       link.href = url;
       link.textContent = url;

@@ -144,6 +144,13 @@ app.post('/api/job/run', requireLogin, async (req, res) => {
   }
 });
 
+// Kortare URL: /:slug — måste ligga sist
+app.get('/:slug', (req, res) => {
+  const job = db.prepare('SELECT * FROM jobs WHERE slug = ?').get(req.params.slug);
+  if (!job) return res.status(404).send('Hittades inte');
+  sendView(res, 'report.html');
+});
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 loadAllJobs();
