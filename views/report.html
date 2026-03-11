@@ -122,13 +122,28 @@
       const latest = reports[0];
       const history = reports.slice(1);
 
-      let html = `
+      // Extrahera rubrik från första raden om den börjar med **RUBRIK:**
+      let headline = '';
+      let bodyContent = latest.content;
+      const rubrikMatch = latest.content.match(/^\*\*RUBRIK:\*\*\s*(.+)/m);
+      if (rubrikMatch) {
+        headline = rubrikMatch[1].trim();
+        bodyContent = latest.content.replace(/^\*\*RUBRIK:\*\*\s*.+\n?/, '');
+      }
+
+      let html = '';
+
+      if (headline) {
+        html += `<div class="card headline-card"><h1 class="top-headline">${headline}</h1></div>`;
+      }
+
+      html += `
         <div class="card report-card">
           <div class="report-meta">
-            <h1>${job.topic}</h1>
             <span class="report-date">${formatDate(latest.generated_at)}</span>
           </div>
-          <div class="report-body">${md(latest.content)}</div>
+          <div class="report-body">${md(bodyContent)}</div>
+          <div class="report-prompt">Nyheterna genererades via denna prompt: <em>${job.topic}</em></div>
         </div>
       `;
 

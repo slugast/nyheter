@@ -8,7 +8,9 @@ function generateReport(topic) {
 
 Välj neutrala och trovärdiga källor (internationella nyhetsbyråer, etablerade medier). Presentera olika perspektiv utan att ta ställning.
 
-Strukturera rapporten med dessa avsnitt i ordning:
+Strukturera rapporten med dessa avsnitt i exakt denna ordning:
+
+**RUBRIK:** [En kort, slagkraftig rubrik på svenska om den absolut största nyheten de senaste 12 timmarna. Max 10 ord.]
 
 ## Sammanfattning
 2–3 meningar om det viktigaste just nu.
